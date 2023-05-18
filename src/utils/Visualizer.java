@@ -2,6 +2,7 @@ package utils;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -92,6 +93,8 @@ public class Visualizer<T extends Boundable> {
 			FontMetrics metrics = g.getFontMetrics(); // lấy thông tin font hiện tại
 			int stringWidth = metrics.stringWidth(coordString); // tính toán chiều rộng của chuỗi
 			int stringHeight = metrics.getHeight(); // tính toán chiều cao của chuỗi
+			Font font = g.getFont().deriveFont(10f);
+			g.setFont(font);
 			g.drawString(coordString, pointX - stringWidth / 2, pointY - stringHeight / 2);
 		} else
 			g.draw(recordValue.draw(drawingDimensions[0], drawingDimensions[1], drawingDimensions[2],

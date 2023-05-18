@@ -29,10 +29,11 @@ public class PlotFrame<T extends Boundable> extends JFrame {
      private JTextField tf3;
      private JTextField tf4;
      private JButton b;
-     private JButton b1;
      private JButton b2;
      private JButton b3;
      private int id;
+     private Object[] pointFields;
+     private Object[] rectangleFields;
 
      private RTree<T> tree;
 
@@ -53,97 +54,107 @@ public class PlotFrame<T extends Boundable> extends JFrame {
           JPanel p2 = new JPanel();
           p2.setLayout(new BoxLayout(p2, BoxLayout.PAGE_AXIS));
 
+          tf1 = new JTextField();
+          tf2 = new JTextField();
+          tf3 = new JTextField();
+          tf4 = new JTextField();
+
+          pointFields = new Object[] {
+                    "x", tf1,
+                    "y", tf2
+          };
+
+          rectangleFields = new Object[] {
+                    "xMin", tf1,
+                    "xMax", tf2,
+                    "yMin", tf3,
+                    "yMax", tf4
+          };
+
           if (type == 0) {
-               tf1 = new JTextField();
-               tf2 = new JTextField();
-
-               p2.add(new JLabel("X:"));
-               p2.add(tf1);
-               p2.add(new JLabel("Y:"));
-               p2.add(tf2);
-
-               b = new JButton("Thêm");
+               b = new JButton("Thêm điểm");
                b.addActionListener(e -> {
-                    float x = Float.parseFloat(tf1.getText());
-                    float y = Float.parseFloat(tf2.getText());
-                    tf1.setText("");
-                    tf2.setText("");
-                    tree.insert((Record<T>) new Record<Point>(new Point(x, y), id + ""));
-                    id++;
-                    repaint();
-               });
-               b1 = new JButton("Thêm ngẫu nhiên 10 điểm");
-               b1.addActionListener(e -> {
-                    int n = 10;
-                    Point[] points = Benchmark.generateRandomPoints(n, new float[] { 0, n }, new float[] { 0, n });
-                    List<Record<Point>> records = Benchmark.generateRecordsPoints(points);
-                    for (Record<Point> r : records) {
-                         tree.insert((Record<T>) r);
+                    int option = JOptionPane.showConfirmDialog(null, pointFields, "Nhập toạ độ",
+                              JOptionPane.OK_CANCEL_OPTION);
+                    if (option == JOptionPane.OK_OPTION) {
+                         try {
+                              float x = Float.parseFloat(tf1.getText());
+                              float y = Float.parseFloat(tf2.getText());
+                              tf1.setText("");
+                              tf2.setText("");
+                              tree.insert((Record<T>) new Record<Point>(new Point(x, y), id + ""));
+                              id++;
+                              repaint();
+                         } catch (NumberFormatException err) {
+                              tf1.setText("");
+                              tf2.setText("");
+                              JOptionPane.showMessageDialog(null, "An error occurred: " + err.getMessage(), "Lỗi",
+                                        JOptionPane.ERROR_MESSAGE);
+                         }
                     }
-                    b1.setEnabled(false);
-                    repaint();
                });
-               p2.add(b);
-               p2.add(b1);
-          } else if (type == 1) {
-               tf1 = new JTextField();
-               tf2 = new JTextField();
-               tf3 = new JTextField();
-               tf4 = new JTextField();
-
-               p2.add(new JLabel("Điểm dưới trái"));
-               p2.add(new JLabel("X:"));
-               p2.add(tf1);
-               p2.add(new JLabel("Y:"));
-               p2.add(tf2);
-
-               p2.add(new JLabel("Điểm trên phải"));
-               p2.add(new JLabel("X:"));
-               p2.add(tf3);
-               p2.add(new JLabel("Y:"));
-               p2.add(tf4);
-
-               b = new JButton("Thêm");
-               b.addActionListener(e -> {
-                    float blx = Float.parseFloat(tf1.getText());
-                    float bly = Float.parseFloat(tf2.getText());
-                    float urx = Float.parseFloat(tf3.getText());
-                    float ury = Float.parseFloat(tf4.getText());
-                    tf1.setText("");
-                    tf2.setText("");
-                    tf3.setText("");
-                    tf4.setText("");
-                    tree.insert((Record<T>) new Record<Rectangle>(new Rectangle(blx, urx, bly, ury), id + ""));
-                    id++;
-                    repaint();
-               });
-               b1 = new JButton("Thêm ngẫu nhiên 10 HCN");
-               b1.addActionListener(e -> {
-                    int n = 10;
-                    Rectangle[] rectangles = Benchmark.generateRandomRectangles(n, new float[] { 0, n },
-                              new float[] { 0, n });
-                    List<Record<Rectangle>> records = Benchmark.generateRecordsRectangle(rectangles);
-                    for (Record<Rectangle> r : records) {
-                         tree.insert((Record<T>) r);
+               b2 = new JButton("Xoá");
+               b2.addActionListener(e -> {
+                    int option = JOptionPane.showConfirmDialog(null, pointFields, "Nhập toạ độ",
+                              JOptionPane.OK_CANCEL_OPTION);
+                    if (option == JOptionPane.OK_OPTION) {
+                         try {
+                              float x = Float.parseFloat(tf1.getText());
+                              float y = Float.parseFloat(tf2.getText());
+                              tf1.setText("");
+                              tf2.setText("");
+                              tree.delete((Record<T>) new Record<Point>(new Point(x, y), null));
+                              repaint();
+                         } catch (NumberFormatException err) {
+                              tf1.setText("");
+                              tf2.setText("");
+                              JOptionPane.showMessageDialog(null, "An error occurred: " + err.getMessage(), "Lỗi",
+                                        JOptionPane.ERROR_MESSAGE);
+                         }
                     }
-                    b1.setEnabled(false);
-                    repaint();
                });
-               p2.add(b);
-               p2.add(b1);
           } else {
-               throw new IllegalArgumentException();
+               b = new JButton("Thêm HCN");
+               b.addActionListener(e -> {
+                    int option = JOptionPane.showConfirmDialog(null, rectangleFields, "Nhập toạ độ",
+                              JOptionPane.OK_CANCEL_OPTION);
+                    if (option == JOptionPane.OK_OPTION) {
+                         float xMin = Float.parseFloat(tf1.getText());
+                         float xMax = Float.parseFloat(tf2.getText());
+                         float yMin = Float.parseFloat(tf3.getText());
+                         float yMax = Float.parseFloat(tf4.getText());
+                         tf1.setText("");
+                         tf2.setText("");
+                         tf3.setText("");
+                         tf4.setText("");
+                         tree.insert((Record<T>) new Record<Rectangle>(new Rectangle(xMin, xMax, yMin, yMax), id + ""));
+                         id++;
+                         repaint();
+                    }
+               });
+               b2 = new JButton("Xoá");
+               b2.addActionListener(e -> {
+                    int option = JOptionPane.showConfirmDialog(null, rectangleFields, "Nhập toạ độ",
+                              JOptionPane.OK_CANCEL_OPTION);
+                    if (option == JOptionPane.OK_OPTION) {
+                         float xMin = Float.parseFloat(tf1.getText());
+                         float xMax = Float.parseFloat(tf2.getText());
+                         float yMin = Float.parseFloat(tf3.getText());
+                         float yMax = Float.parseFloat(tf4.getText());
+                         tf1.setText("");
+                         tf2.setText("");
+                         tf3.setText("");
+                         tf4.setText("");
+                         tree.delete((Record<T>) new Record<Rectangle>(new Rectangle(xMin, xMax, yMin, yMax), null));
+                         repaint();
+                    }
+               });
           }
-          b2 = new JButton("+");
-          b2.addActionListener(e -> {
-               panel.zoomIn();
-               repaint();
-          });
-          b3 = new JButton("-");
+          b3 = new JButton("Tìm kiếm");
           b3.addActionListener(e -> {
-               panel.zoomOut();
-               repaint();
+
           });
+          p2.add(b);
           p2.add(b2);
           p2.add(b3);
 
