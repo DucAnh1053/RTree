@@ -2,7 +2,6 @@ package utils;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -27,9 +26,11 @@ public class Visualizer<T extends Boundable> {
 	// bright pink
 	private static final Color RECORD_COLOR = new Color(254, 2, 164);
 	private static final Color GRID_COLOR = new Color(0, 128, 255);
+	private boolean showCoordinate;
 
 	public Visualizer() {
 		this.image_size = 1000;
+		showCoordinate = true;
 	}
 
 	public Visualizer(int image_size) {
@@ -81,24 +82,21 @@ public class Visualizer<T extends Boundable> {
 		// drawing a small square for point
 		if (recordValue instanceof Point) {
 			Point point = (Point) recordValue;
-			int pointX = drawingDimensions[0] + drawingDimensions[2] / 2; // tính toán tọa độ X của điểm
-			int pointY = drawingDimensions[1] + drawingDimensions[3] / 2;
+			int pointX = drawingDimensions[0];
+			int pointY = drawingDimensions[1];
 			g.fill(recordValue.draw(drawingDimensions[0], drawingDimensions[1], drawingDimensions[2],
 					drawingDimensions[3]));
-			// g.drawString("(" + ((Point) recordValue).getX() + ", " + ((Point)
-			// recordValue).getY() + ")",
-			// drawingDimensions[0] + drawingDimensions[2] / 2,
-			// drawingDimensions[1] + drawingDimensions[3] + 15);
-			String coordString = String.format("(%.2f, %.2f)", point.getX(), point.getY());
-			FontMetrics metrics = g.getFontMetrics(); // lấy thông tin font hiện tại
-			int stringWidth = metrics.stringWidth(coordString); // tính toán chiều rộng của chuỗi
-			int stringHeight = metrics.getHeight(); // tính toán chiều cao của chuỗi
-			Font font = g.getFont().deriveFont(10f);
-			g.setFont(font);
-			g.drawString(coordString, pointX - stringWidth / 2, pointY - stringHeight / 2);
-		} else
+			if (showCoordinate) {
+				String coordString = String.format("(%.2f, %.2f)", point.getX(), point.getY());
+				FontMetrics metrics = g.getFontMetrics();
+				int stringWidth = metrics.stringWidth(coordString);
+				int stringHeight = metrics.getHeight();
+				g.drawString(coordString, pointX - stringWidth / 2, pointY - stringHeight / 2);
+			}
+		} else {
 			g.draw(recordValue.draw(drawingDimensions[0], drawingDimensions[1], drawingDimensions[2],
 					drawingDimensions[3]));
+		}
 	}
 
 	private void drawRecordNode(Graphics2D g, Node<T> node, float[] rootMbrWidthRange, float[] rootMbrHeightRange) {
@@ -214,5 +212,24 @@ public class Visualizer<T extends Boundable> {
 		}
 		graphics2D.dispose();
 		ImageIO.write(image, "png", filelocation);
+	}
+
+	public void drawRange(RTree<T> tree, Graphics2D g, Rectangle rectangle) {
+		Rectangle rootMbr = tree.getRoot().getMbr();
+		float[] rootMbrWidthRange = new float[] { rootMbr.getTopLeft().getX(), rootMbr.getTopRight().getX() };
+		float[] rootMbrHeightRange = new float[] { rootMbr.getBottomLeft().getY(), rootMbr.getTopLeft().getY() };
+		int[] drawingDimensions = this.getDrawingDimensions(rectangle, rootMbrWidthRange, rootMbrHeightRange);
+		Color borderColor = Color.RED;
+		Color fillColor = new Color(255, 0, 0, 50);
+		g.setPaint(borderColor);
+		g.draw(rectangle.draw(drawingDimensions[0], drawingDimensions[1], drawingDimensions[2],
+				drawingDimensions[3]));
+		g.setPaint(fillColor);
+		g.fill(rectangle.draw(drawingDimensions[0], drawingDimensions[1], drawingDimensions[2],
+				drawingDimensions[3]));
+	}
+
+	public void setShowCoordinate(boolean showCoordinate) {
+		this.showCoordinate = showCoordinate;
 	}
 }

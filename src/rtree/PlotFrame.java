@@ -1,16 +1,12 @@
 package rtree;
 
 import java.awt.FlowLayout;
-import java.awt.event.ActionListener;
-import java.time.Year;
-import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -19,7 +15,7 @@ import javax.swing.border.EmptyBorder;
 import shape.Boundable;
 import shape.Point;
 import shape.Rectangle;
-import utils.Benchmark;
+import utils.Pair;
 import utils.Record;
 
 public class PlotFrame<T extends Boundable> extends JFrame {
@@ -34,13 +30,11 @@ public class PlotFrame<T extends Boundable> extends JFrame {
      private int id;
      private Object[] pointFields;
      private Object[] rectangleFields;
-
-     private RTree<T> tree;
+     private String[] searchFields;
+     private JCheckBox checkBox;
 
      @SuppressWarnings("unchecked")
      public PlotFrame(RTree<T> tree, int type) {
-          this.tree = tree;
-
           panel = new PlotPanel<>(tree);
 
           this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -70,6 +64,8 @@ public class PlotFrame<T extends Boundable> extends JFrame {
                     "yMin", tf3,
                     "yMax", tf4
           };
+
+          searchFields = new String[] { "RangeSearch", "KNN" };
 
           if (type == 0) {
                b = new JButton("Thêm điểm");
@@ -119,17 +115,27 @@ public class PlotFrame<T extends Boundable> extends JFrame {
                     int option = JOptionPane.showConfirmDialog(null, rectangleFields, "Nhập toạ độ",
                               JOptionPane.OK_CANCEL_OPTION);
                     if (option == JOptionPane.OK_OPTION) {
-                         float xMin = Float.parseFloat(tf1.getText());
-                         float xMax = Float.parseFloat(tf2.getText());
-                         float yMin = Float.parseFloat(tf3.getText());
-                         float yMax = Float.parseFloat(tf4.getText());
-                         tf1.setText("");
-                         tf2.setText("");
-                         tf3.setText("");
-                         tf4.setText("");
-                         tree.insert((Record<T>) new Record<Rectangle>(new Rectangle(xMin, xMax, yMin, yMax), id + ""));
-                         id++;
-                         repaint();
+                         try {
+                              float xMin = Float.parseFloat(tf1.getText());
+                              float xMax = Float.parseFloat(tf2.getText());
+                              float yMin = Float.parseFloat(tf3.getText());
+                              float yMax = Float.parseFloat(tf4.getText());
+                              tf1.setText("");
+                              tf2.setText("");
+                              tf3.setText("");
+                              tf4.setText("");
+                              tree.insert((Record<T>) new Record<Rectangle>(new Rectangle(xMin, xMax, yMin, yMax),
+                                        id + ""));
+                              id++;
+                              repaint();
+                         } catch (NumberFormatException err) {
+                              tf1.setText("");
+                              tf2.setText("");
+                              tf3.setText("");
+                              tf4.setText("");
+                              JOptionPane.showMessageDialog(null, "An error occurred: " + err.getMessage(), "Lỗi",
+                                        JOptionPane.ERROR_MESSAGE);
+                         }
                     }
                });
                b2 = new JButton("Xoá");
@@ -137,26 +143,157 @@ public class PlotFrame<T extends Boundable> extends JFrame {
                     int option = JOptionPane.showConfirmDialog(null, rectangleFields, "Nhập toạ độ",
                               JOptionPane.OK_CANCEL_OPTION);
                     if (option == JOptionPane.OK_OPTION) {
-                         float xMin = Float.parseFloat(tf1.getText());
-                         float xMax = Float.parseFloat(tf2.getText());
-                         float yMin = Float.parseFloat(tf3.getText());
-                         float yMax = Float.parseFloat(tf4.getText());
-                         tf1.setText("");
-                         tf2.setText("");
-                         tf3.setText("");
-                         tf4.setText("");
-                         tree.delete((Record<T>) new Record<Rectangle>(new Rectangle(xMin, xMax, yMin, yMax), null));
-                         repaint();
+                         try {
+                              float xMin = Float.parseFloat(tf1.getText());
+                              float xMax = Float.parseFloat(tf2.getText());
+                              float yMin = Float.parseFloat(tf3.getText());
+                              float yMax = Float.parseFloat(tf4.getText());
+                              tf1.setText("");
+                              tf2.setText("");
+                              tf3.setText("");
+                              tf4.setText("");
+                              tree.delete(
+                                        (Record<T>) new Record<Rectangle>(new Rectangle(xMin, xMax, yMin, yMax), null));
+                              repaint();
+                         } catch (NumberFormatException err) {
+                              tf1.setText("");
+                              tf2.setText("");
+                              tf3.setText("");
+                              tf4.setText("");
+                              JOptionPane.showMessageDialog(null, "An error occurred: " + err.getMessage(), "Lỗi",
+                                        JOptionPane.ERROR_MESSAGE);
+                         }
                     }
                });
           }
           b3 = new JButton("Tìm kiếm");
           b3.addActionListener(e -> {
-
+               int result = JOptionPane.showOptionDialog(null, "Chọn một kiểu dữ liệu R-tree để chạy",
+                         "Tìm kiếm",
+                         JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, searchFields,
+                         searchFields[0]);
+               if (result == 0) {
+                    int option = JOptionPane.showConfirmDialog(null, rectangleFields, "Nhập toạ độ",
+                              JOptionPane.OK_CANCEL_OPTION);
+                    if (option == JOptionPane.OK_OPTION) {
+                         try {
+                              float xMin = Float.parseFloat(tf1.getText());
+                              float xMax = Float.parseFloat(tf2.getText());
+                              float yMin = Float.parseFloat(tf3.getText());
+                              float yMax = Float.parseFloat(tf4.getText());
+                              tf1.setText("");
+                              tf2.setText("");
+                              tf3.setText("");
+                              tf4.setText("");
+                              Rectangle rectangle = new Rectangle(xMin, xMax, yMin, yMax);
+                              List<Record<T>> lRecords = tree.rangeSearch(rectangle);
+                              StringBuilder sb = new StringBuilder();
+                              for (Record<T> record : lRecords) {
+                                   sb.append(record).append("\n");
+                              }
+                              sb.delete(sb.length() - 1, sb.length());
+                              panel.setRectangle(rectangle);
+                              repaint();
+                              JOptionPane.showMessageDialog(null, sb.toString(), "Kết quả",
+                                        JOptionPane.INFORMATION_MESSAGE);
+                              panel.setRectangle(null);
+                              repaint();
+                         } catch (NumberFormatException err) {
+                              tf1.setText("");
+                              tf2.setText("");
+                              tf3.setText("");
+                              tf4.setText("");
+                              JOptionPane.showMessageDialog(null, "An error occurred: " + err.getMessage(), "Lỗi",
+                                        JOptionPane.ERROR_MESSAGE);
+                         }
+                    }
+               } else if (result == 1) {
+                    if (type == 0) {
+                         int option = JOptionPane.showConfirmDialog(null, pointFields, "Nhập toạ độ",
+                                   JOptionPane.OK_CANCEL_OPTION);
+                         if (option == JOptionPane.OK_OPTION) {
+                              try {
+                                   float x = Float.parseFloat(tf1.getText());
+                                   float y = Float.parseFloat(tf2.getText());
+                                   tf1.setText("");
+                                   tf2.setText("");
+                                   JOptionPane.showConfirmDialog(null, new Object[] { "Số lượng", tf1 }, "KNN",
+                                             JOptionPane.OK_CANCEL_OPTION);
+                                   int num = Integer.parseInt(tf1.getText());
+                                   tf1.setText("");
+                                   List<Pair<Record<T>, Float>> lPairs = tree.nearestNeighborsSearch(
+                                             (Record<T>) new Record<Point>(new Point(x, y), null), num);
+                                   StringBuilder sb = new StringBuilder();
+                                   for (Pair<Record<T>, Float> pair : lPairs) {
+                                        sb.append(pair).append("\n");
+                                   }
+                                   sb.delete(sb.length() - 1, sb.length());
+                                   JOptionPane.showMessageDialog(null, sb.toString(), "Kết quả",
+                                             JOptionPane.INFORMATION_MESSAGE);
+                              } catch (NumberFormatException err) {
+                                   tf1.setText("");
+                                   tf2.setText("");
+                                   JOptionPane.showMessageDialog(null, "An error occurred: " + err.getMessage(), "Lỗi",
+                                             JOptionPane.ERROR_MESSAGE);
+                              }
+                         }
+                    } else {
+                         int option = JOptionPane.showConfirmDialog(null, rectangleFields, "Nhập toạ độ",
+                                   JOptionPane.OK_CANCEL_OPTION);
+                         if (option == JOptionPane.OK_OPTION) {
+                              try {
+                                   float xMin = Float.parseFloat(tf1.getText());
+                                   float xMax = Float.parseFloat(tf2.getText());
+                                   float yMin = Float.parseFloat(tf3.getText());
+                                   float yMax = Float.parseFloat(tf4.getText());
+                                   tf1.setText("");
+                                   tf2.setText("");
+                                   tf3.setText("");
+                                   tf4.setText("");
+                                   JOptionPane.showConfirmDialog(null, new Object[] { "Số lượng", tf1 }, "KNN",
+                                             JOptionPane.OK_CANCEL_OPTION);
+                                   int num = Integer.parseInt(tf1.getText());
+                                   tf1.setText("");
+                                   List<Pair<Record<T>, Float>> lPairs = tree.nearestNeighborsSearch(
+                                             (Record<T>) new Record<Rectangle>(new Rectangle(xMin, xMax, yMin, yMax),
+                                                       null),
+                                             num);
+                                   StringBuilder sb = new StringBuilder();
+                                   for (Pair<Record<T>, Float> pair : lPairs) {
+                                        sb.append(pair).append("\n");
+                                   }
+                                   sb.delete(sb.length() - 1, sb.length());
+                                   JOptionPane.showMessageDialog(null, sb.toString(), "Kết quả",
+                                             JOptionPane.INFORMATION_MESSAGE);
+                              } catch (NumberFormatException err) {
+                                   tf1.setText("");
+                                   tf2.setText("");
+                                   tf3.setText("");
+                                   tf4.setText("");
+                                   JOptionPane.showMessageDialog(null, "An error occurred: " + err.getMessage(), "Lỗi",
+                                             JOptionPane.ERROR_MESSAGE);
+                              }
+                         }
+                    }
+               }
           });
           p2.add(b);
           p2.add(b2);
           p2.add(b3);
+          if (type == 0) {
+               checkBox = new JCheckBox("Show Coordinate");
+               checkBox.setSelected(true);
+               checkBox.addActionListener(e -> {
+                    if (checkBox.isSelected()) {
+                         panel.showCoordinate();
+                         repaint();
+                    } else {
+                         panel.hideCoordinate();
+                         repaint();
+                    }
+               });
+               p2.add(checkBox);
+          }
 
           this.add(p);
           this.add(p2);
