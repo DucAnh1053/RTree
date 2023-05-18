@@ -22,6 +22,7 @@ public class PlotPanel<T extends Boundable> extends JPanel {
      private boolean dragging;
      private double[] position;
      private Rectangle rectangle;
+     private boolean isRectangle;
 
      public PlotPanel(RTree<T> tree) {
           this.tree = tree;
@@ -41,7 +42,7 @@ public class PlotPanel<T extends Boundable> extends JPanel {
           g2D.translate(position[0] / scale, position[1] / scale);
           visualizer.createVisualization(tree, g2D);
           if (rectangle != null) {
-               visualizer.drawRange(tree, g2D, rectangle);
+               visualizer.drawRange(tree, g2D, rectangle, isRectangle);
           }
      }
 
@@ -104,6 +105,12 @@ public class PlotPanel<T extends Boundable> extends JPanel {
 
      public void setRectangle(Rectangle rectangle) {
           this.rectangle = rectangle;
+          isRectangle = true;
+     }
+
+     public void setCircle(Rectangle rectangle) {
+          this.rectangle = rectangle;
+          isRectangle = false;
      }
 
      public void showCoordinate() {

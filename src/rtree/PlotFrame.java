@@ -1,5 +1,6 @@
 package rtree;
 
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.util.List;
 
@@ -9,6 +10,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
@@ -192,9 +195,13 @@ public class PlotFrame<T extends Boundable> extends JFrame {
                                    sb.append(record).append("\n");
                               }
                               sb.delete(sb.length() - 1, sb.length());
+                              JTextArea textArea = new JTextArea(sb.toString());
+                              textArea.setEditable(false);
+                              JScrollPane scrollPane = new JScrollPane(textArea);
+                              scrollPane.setPreferredSize(new Dimension(400, 300));
                               panel.setRectangle(rectangle);
                               repaint();
-                              JOptionPane.showMessageDialog(null, sb.toString(), "Kết quả",
+                              JOptionPane.showMessageDialog(null, scrollPane, "Kết quả",
                                         JOptionPane.INFORMATION_MESSAGE);
                               panel.setRectangle(null);
                               repaint();
@@ -228,8 +235,18 @@ public class PlotFrame<T extends Boundable> extends JFrame {
                                         sb.append(pair).append("\n");
                                    }
                                    sb.delete(sb.length() - 1, sb.length());
-                                   JOptionPane.showMessageDialog(null, sb.toString(), "Kết quả",
+                                   float maxDis = lPairs.get(lPairs.size() - 1).getSecond();
+                                   Rectangle rectangle = new Rectangle(x - maxDis, x + maxDis, y - maxDis, y + maxDis);
+                                   panel.setCircle(rectangle);
+                                   repaint();
+                                   JTextArea textArea = new JTextArea(sb.toString());
+                                   textArea.setEditable(false);
+                                   JScrollPane scrollPane = new JScrollPane(textArea);
+                                   scrollPane.setPreferredSize(new Dimension(400, 300));
+                                   JOptionPane.showMessageDialog(null, scrollPane, "Kết quả",
                                              JOptionPane.INFORMATION_MESSAGE);
+                                   panel.setCircle(null);
+                                   repaint();
                               } catch (NumberFormatException err) {
                                    tf1.setText("");
                                    tf2.setText("");
@@ -263,7 +280,11 @@ public class PlotFrame<T extends Boundable> extends JFrame {
                                         sb.append(pair).append("\n");
                                    }
                                    sb.delete(sb.length() - 1, sb.length());
-                                   JOptionPane.showMessageDialog(null, sb.toString(), "Kết quả",
+                                   JTextArea textArea = new JTextArea(sb.toString());
+                                   textArea.setEditable(false);
+                                   JScrollPane scrollPane = new JScrollPane(textArea);
+                                   scrollPane.setPreferredSize(new Dimension(400, 300));
+                                   JOptionPane.showMessageDialog(null, scrollPane, "Kết quả",
                                              JOptionPane.INFORMATION_MESSAGE);
                               } catch (NumberFormatException err) {
                                    tf1.setText("");

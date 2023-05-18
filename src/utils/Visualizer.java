@@ -173,9 +173,6 @@ public class Visualizer<T extends Boundable> {
 	}
 
 	public void createVisualization(RTree<T> tree, Graphics2D g) {
-		// g.setPaint(Color.WHITE);
-		// g.fillRect(0, 0, this.image_size, this.image_size);
-		// getting root's mbr limit dimensions
 		Rectangle rootMbr = tree.getRoot().getMbr();
 		int treeHeight = tree.calculateHeight();
 		float[] rootMbrWidthRange = new float[] { rootMbr.getTopLeft().getX(), rootMbr.getTopRight().getX() };
@@ -214,7 +211,7 @@ public class Visualizer<T extends Boundable> {
 		ImageIO.write(image, "png", filelocation);
 	}
 
-	public void drawRange(RTree<T> tree, Graphics2D g, Rectangle rectangle) {
+	public void drawRange(RTree<T> tree, Graphics2D g, Rectangle rectangle, boolean isRectangle) {
 		Rectangle rootMbr = tree.getRoot().getMbr();
 		float[] rootMbrWidthRange = new float[] { rootMbr.getTopLeft().getX(), rootMbr.getTopRight().getX() };
 		float[] rootMbrHeightRange = new float[] { rootMbr.getBottomLeft().getY(), rootMbr.getTopLeft().getY() };
@@ -222,11 +219,18 @@ public class Visualizer<T extends Boundable> {
 		Color borderColor = Color.RED;
 		Color fillColor = new Color(255, 0, 0, 50);
 		g.setPaint(borderColor);
-		g.draw(rectangle.draw(drawingDimensions[0], drawingDimensions[1], drawingDimensions[2],
-				drawingDimensions[3]));
 		g.setPaint(fillColor);
-		g.fill(rectangle.draw(drawingDimensions[0], drawingDimensions[1], drawingDimensions[2],
-				drawingDimensions[3]));
+		if (isRectangle) {
+			g.draw(rectangle.draw(drawingDimensions[0], drawingDimensions[1], drawingDimensions[2],
+					drawingDimensions[3]));
+			g.fill(rectangle.draw(drawingDimensions[0], drawingDimensions[1], drawingDimensions[2],
+					drawingDimensions[3]));
+		} else {
+			g.drawOval(drawingDimensions[0], drawingDimensions[1], drawingDimensions[2],
+					drawingDimensions[3]);
+			g.fillOval(drawingDimensions[0], drawingDimensions[1], drawingDimensions[2],
+					drawingDimensions[3]);
+		}
 	}
 
 	public void setShowCoordinate(boolean showCoordinate) {
